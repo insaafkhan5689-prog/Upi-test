@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+
+<title>UPI QR Pro</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Inter, Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+  min-height: 100vh;
+  transition: 0.3s;
+}
+
+body.dark {
+  background: #111827;
+  color: #f9fafb;
+}
+
+.container {
+  width: 100%;
+  max-width: 520px;
+  margin: auto;
+  padding: 18px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.logo span {
+  color: #16a34a;
+}
+
+.theme-btn {
+  border: none;
+  background: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
+}
+
+.dark .theme-btn {
+  background: #1f2937;
+}
+
+.card {
+  background: white;
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+.dark .card {
+  background: #1f2937;
+}
+
+.title {
+  font-size: 19px;
+  font-weight: 750;
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 14px 0 7px;
+  color: #6b7280;
+}
+
+.dark label {
+  color: #9ca3af;
+}
+
+input {
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  outline: none;
+  font-size: 16px;
+  background: #fff;
+  color: #111827;
+}
+
+input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+}
+
+.dark input {
+  background: #111827;
+  color: white;
+  border-color: #374151;
+}
+
+.quick {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.quick button {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.quick button:hover {
+  border-color: #16a34a;
+  color: #16a34a;
+}
+
+.dark .quick button {
+  background: #111827;
+  color: white;
+  border-color: #374151;
+}
+
+.generate {
+  width: 100%;
+  padding: 15px;
+  margin-top: 18px;
+  border: none;
+  border-radius: 13px;
+  background: #16a34a;
+  color: white;
+  font-size: 17px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.generate:hover {
+  background: #15803d;
+}
+
+.generate:active {
+  transform: scale(.98);
+}
+
+.result {
+  display: none;
+  text-align: center;
+}
+
+.receiver {
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.amount {
+  font-size: 34px;
+  font-weight: 850;
+  margin: 12px 0;
+}
+
+#qrcode {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+#qrcode img,
+#qrcode canvas {
+  border-radius: 8px;
+}
+
+.note-display {
+  color: #6b7280;
+  font-size: 13px;
+  margin: 10px 0;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.actions button {
+  padding: 12px;
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.share {
+  background: #2563eb;
+  color: white;
+}
+
+.copy {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.open {
+  background: #16a34a;
+  color: white;
+  grid-column: 1 / -1;
+}
+
+.reset {
+  background: #fee2e2;
+  color: #b91c1c;
+  grid-column: 1 / -1;
+}
+
+.dark .copy {
+  background: #374151;
+  color: white;
+}
+
+.dark .reset {
+  background: #451a1a;
+  color: #fca5a5;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .history-item {
+  border-color: #374151;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-amount {
+  font-weight: 750;
+}
+
+.history-use {
+  border: none;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.clear-history {
+  width: 100%;
+  margin-top: 12px;
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.footer {
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
+  padding: 10px 0 25px;
+}
+
+.hidden {
+  display: none;
+}
+
+@media(max-width:360px) {
+  .quick {
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="logo">UPI <span>QR Pro</span></div>
+
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">
+      🌙
+    </button>
+  </div>
+
+
+  <!-- PAYMENT DETAILS -->
+
+  <div class="card">
+
+    <div class="title">
+      Payment Details
+    </div>
+
+    <label>UPI ID</label>
+
+    <input
+      type="text"
+      id="upi"
+      placeholder="example@upi"
+      autocomplete="off"
+    >
+
+    <label>Receiver Name</label>
+
+    <input
+      type="text"
+      id="name"
+      placeholder="Your name / business name"
+    >
+
+    <label>Amount</label>
+
+    <input
+      type="number"
+      id="amount"
+      placeholder="Enter amount"
+      min="1"
+      step="0.01"
+    >
+
+    <div class="quick">
+      <button onclick="setAmount(10)">₹10</button>
+      <button onclick="setAmount(20)">₹20</button>
+      <button onclick="setAmount(50)">₹50</button>
+      <button onclick="setAmount(100)">₹100</button>
+      <button onclick="setAmount(500)">₹500</button>
+      <button onclick="setAmount(1000)">₹1000</button>
+    </div>
+
+    <label>Payment Note (optional)</label>
+
+    <input
+      type="text"
+      id="note"
+      placeholder="e.g. Product payment"
+      maxlength="50"
+    >
+
+    <button class="generate" onclick="generateQR()">
+      Generate Payment QR
+    </button>
+
+  </div>
+
+
+  <!-- RESULT -->
+
+  <div class="card result" id="result">
+
+    <div class="title">
+      Scan & Pay
+    </div>
+
+    <div class="receiver" id="receiver"></div>
+
+    <div class="amount" id="showAmount"></div>
+
+    <div id="qrcode"></div>
+
+    <div class="note-display" id="showNote"></div>
+
+    <div class="actions">
+
+      <button class="share" onclick="shareQR()">
+        📤 Share
+      </button>
+
+      <button class="copy" onclick="copyUPI()">
+        📋 Copy UPI
+      </button>
+
+      <button class="open" onclick="openUPI()">
+        📲 Open UPI App
+      </button>
+
+      <button class="reset" onclick="resetQR()">
+        🔄 Create New QR
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- HISTORY -->
+
+  <div class="card" id="historyCard">
+
+    <div class="title">
+      Recent Amounts
+    </div>
+
+    <div id="history"></div>
+
+    <button class="clear-history" onclick="clearHistory()">
+      Clear History
+    </button>
+
+  </div>
+
+
+  <div class="footer">
+    UPI QR Pro • Payment QR Generator
+    <br>
+    No bank credentials or UPI PIN are stored.
+  </div>
+
+</div>
+
+
+<script>
+
+let currentUPILink = "";
+
+
+/* LOAD SAVED DATA */
+
+window.onload = function() {
+
+  const savedUPI = localStorage.getItem("upi_id");
+  const savedName = localStorage.getItem("upi_name");
+
+  if(savedUPI) {
+    document.getElementById("upi").value = savedUPI;
+  }
+
+  if(savedName) {
+    document.getElementById("name").value = savedName;
+  }
+
+  loadHistory();
+
+  if(localStorage.getItem("dark_mode") === "true") {
+    document.body.classList.add("dark");
+    document.getElementById("themeBtn").innerText = "☀️";
+  }
+};
+
+
+/* QUICK AMOUNT */
+
+function setAmount(value) {
+  document.getElementById("amount").value = value;
+}
+
+
+/* GENERATE QR */
+
+function generateQR() {
+
+  const upi = document.getElementById("upi").value.trim();
+  const name = document.getElementById("name").value.trim();
+  const amount = document.getElementById("amount").value.trim();
+  const note = document.getElementById("note").value.trim();
+
+  if(!upi) {
+    alert("Please enter your UPI ID.");
+    return;
+  }
+
+  if(!upi.includes("@")) {
+    alert("Please enter a valid UPI ID.");
+    return;
+  }
+
+  if(!amount || Number(amount) <= 0) {
+    alert("Please enter a valid amount.");
+    return;
+  }
+
+  const receiverName = name || "UPI Payment";
+
+  localStorage.setItem("upi_id", upi);
+  localStorage.setItem("upi_name", receiverName);
+
+
+  let upiURL =
+    "upi://pay" +
+    "?pa=" + encodeURIComponent(upi) +
+    "&pn=" + encodeURIComponent(receiverName) +
+    "&am=" + encodeURIComponent(Number(amount).toFixed(2)) +
+    "&cu=INR";
+
+  if(note) {
+    upiURL += "&tn=" + encodeURIComponent(note);
+  }
+
+  currentUPILink = upiURL;
+
+
+  document.getElementById("qrcode").innerHTML = "";
+
+  new QRCode(document.getElementById("qrcode"), {
+    text: upiURL,
+    width: 230,
+    height: 230,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+
+
+  document.getElementById("receiver").innerText =
+    receiverName;
+
+  document.getElementById("showAmount").innerText =
+    "₹" + Number(amount).toFixed(2);
+
+  document.getElementById("showNote").innerText =
+    note ? "Note: " + note : "";
+
+
+  document.getElementById("result").style.display = "block";
+
+
+  saveHistory(
+    Number(amount),
+    receiverName
+  );
+
+
+  setTimeout(() => {
+
+    document.getElementById("result")
+      .scrollIntoView({
+        behavior: "smooth"
+      });
+
+  },100);
+
+}
+
+
+/* OPEN UPI */
+
+function openUPI() {
+
+  if(!currentUPILink) {
+    alert("Generate a QR first.");
+    return;
+  }
+
+  window.location.href = currentUPILink;
+}
+
+
+/* COPY UPI */
+
+function copyUPI() {
+
+  const upi =
+    document.getElementById("upi").value;
+
+  navigator.clipboard.writeText(upi)
+  .then(() => {
+
+    alert("UPI ID copied!");
+
+  })
+  .catch(() => {
+
+    alert("Could not copy UPI ID.");
+
+  });
+
+}
+
+
+/* SHARE */
+
+async function shareQR() {
+
+  const canvas =
+    document.querySelector("#qrcode canvas");
+
+  if(!canvas) {
+    alert("Generate QR first.");
+    return;
+  }
+
+  canvas.toBlob(async function(blob) {
+
+    const file = new File(
+      [blob],
+      "UPI-QR.png",
+      {type:"image/png"}
+    );
+
+    if(
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({files:[file]})
+    ) {
+
+      try {
+
+        await navigator.share({
+          title: "UPI Payment QR",
+          text: "Scan to make payment",
+          files: [file]
+        });
+
+      } catch(e) {}
+
+    } else {
+
+      alert(
+        "Your browser does not support QR sharing."
+      );
+
+    }
+
+  });
+
+}
+
+
+/* RESET */
+
+function resetQR() {
+
+  document.getElementById("amount").value = "";
+  document.getElementById("note").value = "";
+
+  document.getElementById("qrcode").innerHTML = "";
+
+  document.getElementById("result").style.display = "none";
+
+  currentUPILink = "";
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+/* HISTORY */
+
+function saveHistory(amount, name) {
+
+  let history =
+    JSON.parse(
+      localStorage.getItem("upi_history") || "[]"
+    );
+
+  history = history.filter(
+    item => item.amount !== amount
+  );
+
+  history.unshift({
+    amount: amount,
+    name: name
+  });
+
+  history = history.slice(0,6);
+
+  localStorage.setItem(
+    "upi_history",
+    JSON.stringify(history)
+  );
+
+  loadHistory();
+}
+
+
+function loadHistory() {
+
+  const history =
+    JSON.parse(
+      localStorage.getItem("upi_history") || "[]"
+    );
+
+  const box =
+    document.getElementById("history");
+
+  box.innerHTML = "";
+
+  if(history.length === 0) {
+
+    box.innerHTML =
+      '<div style="color:#9ca3af;font-size:14px;">No recent amounts</div>';
+
+    return;
+  }
+
+
+  history.forEach(item => {
+
+    const div =
+      document.createElement("div");
+
+    div.className = "history-item";
+
+    div.innerHTML = `
+      <div>
+        <div class="history-amount">
+          ₹${Number(item.amount).toFixed(2)}
+        </div>
+        <div style="font-size:12px;color:#9ca3af;">
+          ${escapeHTML(item.name)}
+        </div>
+      </div>
+
+      <button
+        class="history-use"
+        onclick="useHistory(${item.amount})">
+        Use
+      </button>
+    `;
+
+    box.appendChild(div);
+
+  });
+
+}
+
+
+function useHistory(amount) {
+
+  document.getElementById("amount").value =
+    amount;
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+function clearHistory() {
+
+  localStorage.removeItem("upi_history");
+
+  loadHistory();
+
+}
+
+
+/* DARK MODE */
+
+function toggleTheme() {
+
+  document.body.classList.toggle("dark");
+
+  const dark =
+    document.body.classList.contains("dark");
+
+  localStorage.setItem(
+    "dark_mode",
+    dark
+  );
+
+  document.getElementById("themeBtn").innerText =
+    dark ? "☀️" : "🌙";
+
+}
+
+
+/* SECURITY */
+
+function escapeHTML(text) {
+
+  const div =
+    document.createElement("div");
+
+  div.textContent = text;
+
+  return div.innerHTML;
+
+}
+
+</script>
+
+</body>
+        </html>
